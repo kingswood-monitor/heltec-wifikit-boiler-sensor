@@ -68,6 +68,8 @@ bool kwHeltecWifikit32::initNetwork(const char* wifi_ssid, const char* wifi_pwd,
 void kwHeltecWifikit32::makeTopic(const char* type, const char* field, const char* sensorType, char* buf)
 {
     snprintf(buf, MAX_TOPIC_BUFFER_LEN, "%s/%s/%s/%s/%s", TOPIC_ROOT, type, field, sensorType, deviceID);
+    // if its a command, register it
+    if (strcmp(type, "command") == 0) { mqttClient.subscribe(buf); }
 }
 
 void kwHeltecWifikit32::makeTopic(const char* type, const char* field, char* buf)
@@ -127,6 +129,6 @@ boolean kwHeltecWifikit32::mqttReconnect()
 // MQTT callback function
 void kwHeltecWifikit32::mqttCallback(char* topic, byte* payload, unsigned int length)
 {
-
+    
 }
 

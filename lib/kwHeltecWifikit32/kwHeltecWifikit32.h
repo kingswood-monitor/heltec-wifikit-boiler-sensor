@@ -24,15 +24,16 @@ public:
   void makeTopic(const char* type, const char* field, const char* sensorType, char* buf);
   void makeTopic(const char* type, const char* field, char* buf);
   void run();
+  
+  char deviceID[16] = {0};
+  char topicMetaStatus[MAX_TOPIC_BUFFER_LEN];
 
 private:
   void getMacAddress();
   static void mqttCallback(char* topic, byte* payload, unsigned int length);
   boolean mqttReconnect();
 
-  char deviceID[16] = {0};
   long lastReconnectAttempt = 0;
-  char topicMetaStatus[MAX_TOPIC_BUFFER_LEN];
 };
 
 #endif
