@@ -4,6 +4,8 @@ SSD1306AsciiWire oled;
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
+char buf[10] = {0};
+
 
 // PUBLIC ///////////////////////////////////////////////////////////////////////
 
@@ -77,10 +79,46 @@ void kwHeltecWifikit32::makeTopic(const char* type, const char* field, char* buf
     snprintf(buf, MAX_TOPIC_BUFFER_LEN, "%s/%s/%s/%s", TOPIC_ROOT, type, field, deviceID);
 }
 
+// Set the dislpay mode
+void kwHeltecWifikit32::displayMode(DisplayMode mode)
+{
+    switch(mode)
+    {
+        case DISPLAY_MODE_SYSTEM:
+            oled.clear();
+            oled.set1X();
+            break;
+        
+        case DISPLAY_MODE_DATA:
+            oled.clear();
+            oled.set2X();
+            break;
+    }
+}
+
+// Publish data to the specified topic
+void kwHeltecWifikit32::publish(char* topic, char* data)
+{
+    mqttClient.publish(topic, data);
+}
+
+void kwHeltecWifikit32::publish(char* topic, int data)
+{
+    sprintf(buf, "%d", data);
+    publish(topic, buf);
+}
+
+void kwHeltecWifikit32::publish(char* topic, float data)
+{
+    sprintf(buf, "%.1f", data);
+    publish(topic, buf);
+}
 
 // Run - keep MQTT alive and process commands
 void kwHeltecWifikit32::run()
 {   
+    // displayMode(DISPLAY_MODE_DATA);
+
     if (!mqttClient.connected()) 
     {
         long now = millis();

@@ -14,6 +14,12 @@
 #define MAX_TOPIC_BUFFER_LEN 50
 #define TOPIC_ROOT "kw_sensors"
 
+enum DisplayMode
+{
+  DISPLAY_MODE_SYSTEM,
+  DISPLAY_MODE_DATA,
+};
+
 class kwHeltecWifikit32 
 {
 public:
@@ -23,6 +29,9 @@ public:
   bool initNetwork(const char* SSID, const char* PWD, IPAddress MQTT_HOST);
   void makeTopic(const char* type, const char* field, const char* sensorType, char* buf);
   void makeTopic(const char* type, const char* field, char* buf);
+  void displayMode(DisplayMode mode);
+  void publish(char* topic, char* data);
+  void publish(char* topic, int data);
   void run();
   
   char deviceID[16] = {0};
