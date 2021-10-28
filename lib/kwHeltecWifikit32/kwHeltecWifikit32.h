@@ -31,7 +31,7 @@ public:
   void makeTopic(const char* type, const char* field, const char* sensorType, char* buf);
   void makeTopic(const char* type, const char* field, char* buf);
   void publish(char* topic, char* data);
-  void publish(char* topic, int data);
+  void publish(char* topic, uint16_t data);
   void publish(char* topic, float data);
   void display(const char* data, int row);
   void run();

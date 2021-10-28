@@ -16,8 +16,26 @@ kwBoiler::kwBoiler(int pin) : sensorPin{ pin }
 }
 
 // Read boiler state
-int kwBoiler::readState()
+uint16_t kwBoiler::readState()
 {
     state = digitalRead(sensorPin);
+    
+    didRise = (oldState == LOW) && (state == HIGH);
+    if (didRise) { oldMillis = millis(); }
+
+    if (state == HIGH)
+    {
+        cumulativeTimeMillis += millis() - oldMillis;
+        oldMillis = millis();
+    }
+
+    oldState = state;
+    
     return state;
+}
+
+// Get cumulative on time in seconds
+uint16_t kwBoiler::cumulativeSeconds()
+{
+    return cumulativeTimeMillis / 1000;
 }

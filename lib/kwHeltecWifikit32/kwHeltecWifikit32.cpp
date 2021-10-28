@@ -89,10 +89,12 @@ void kwHeltecWifikit32::displayMode(DisplayMode mode)
     switch(mode)
     {
         case DISPLAY_MODE_SYSTEM:
+            oled.setScrollMode(SCROLL_MODE_AUTO);
             oled.set1X();
             break;
         
         case DISPLAY_MODE_DATA:
+            oled.setScrollMode(SCROLL_MODE_OFF);
             oled.clear();
             oled.set2X();
             break;
@@ -105,7 +107,7 @@ void kwHeltecWifikit32::publish(char* topic, char* data)
     mqttClient.publish(topic, data);
 }
 
-void kwHeltecWifikit32::publish(char* topic, int data)
+void kwHeltecWifikit32::publish(char* topic, uint16_t data)
 {
     sprintf(buf, "%d", data);
     publish(topic, buf);

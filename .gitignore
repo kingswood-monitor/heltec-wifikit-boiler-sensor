@@ -6,3 +6,5 @@
 
 .DS_Store
 /.vscode/settings.json
+/lib/kwMQTT
+/include/secrets.h

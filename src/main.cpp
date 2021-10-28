@@ -2,6 +2,7 @@
 #include <neotimer.h>
 #include <kwHeltecWifikit32.h>
 #include <kwBoiler.h>
+#include <secrets.h>
 
 #define SENSOR_TYPE "energy"
 #define FIRMWARE_VERSION "1.1.0"
@@ -13,8 +14,8 @@
 #define PIN_SCL 15
 
 // Network credentials
-#define WIFI_SSID "kingswoodguest"
-#define WIFI_PASSWORD "wbtc0rar"
+// #define WIFI_SSID xxx
+// #define WIFI_PASSWORD xxx
 #define MQTT_HOST IPAddress(192, 168, 1, 1) // Mac Mini M1
 #define MQTT_PORT 1883
 
@@ -48,16 +49,36 @@ void setup()
     
     publishDataTimer.set(1000);
 
-    // heltec.displayMode(DISPLAY_MODE_DATA);
+    delay(1000);
 
+    heltec.displayMode(DISPLAY_MODE_DATA);
   }
 
 void loop() {
+  
   if (publishDataTimer.repeat())
   {
-    int boilerState = boiler.readState();
+    char buf[20];
+    
+    // boiler state
+    uint16_t boilerState = boiler.readState();
     heltec.publish(topicDataBoilerStateLED, boilerState);
-    // heltec.display("State", boilerstate, 1);
+    heltec.display((boilerState == 1) ? "HEATING" : "OFF", 0);
+    
+    // cumulative time
+    uint16_t cumulativeSeconds = boiler.cumulativeSeconds();
+    heltec.publish(topicDataBoilerCumulativeLED, cumulativeSeconds);
+
+    if (cumulativeSeconds >= 60)
+    {
+      uint16_t cumulativeMinutes = cumulativeSeconds / 60;
+      sprintf(buf, "%d minute%s", cumulativeMinutes, (cumulativeMinutes > 0) ? "s" : "");
+    }
+    else{
+      sprintf(buf, "%d seconds", cumulativeSeconds);
+    }
+    
+    heltec.display(buf, 6);
   }
   
   heltec.run();
