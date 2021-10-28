@@ -30,6 +30,7 @@ char topicCommandRBE[MAX_TOPIC_BUFFER_LEN];
 
 void connectToMqtt() {
   Serial.println("Connecting to MQTT");
+  oled.println("Connecting to MQTT...");
   mqttClient.connect();
 }
 
@@ -53,21 +54,19 @@ void publishData()
   
   mqttClient.publish(topicDataBoilerCumulativeLED, 2, true, buf);
 
-  Heltec.display -> clear();
-  Heltec.display -> drawString(0, 0, "Boiler:");
-  Heltec.display -> drawString(50, 0, getBoilerState() == 1 ? "ON" : "OFF");
-  Heltec.display -> drawString(0, 10, "Seconds:");
-  Heltec.display -> drawString(50, 10, buf);
-  Heltec.display -> display();
+  oled.clear();
+  oled.println(getBoilerState() == 1 ? "ON" : "OFF");
+  // oled.println(buf);
+
 }
 
 void onMqttConnect(bool sessionPresent) 
 {
   Serial.println("Connected to MQTT");
-  Heltec.display -> clear();
-  delay(1000);
-  Heltec.display -> display();
-
+  
+  oled.println("Connected to MQTT");
+  oled.set2X();
+  
   mqttClient.publish(topicMetaFirmware, 2, true, g_firmwareVersion);
   mqttClient.publish(topicMetaStatus, 2, true, "ONLINE");
 
@@ -79,9 +78,9 @@ void onMqttConnect(bool sessionPresent)
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) 
 {
   Serial.println("Disonnected from MQTT");
-  Heltec.display -> clear();
-  Heltec.display -> drawString(0, 0, "MQTT disconnected. Reconnecting...");
-  Heltec.display -> display();
+  oled.set1X();
+  oled.clear();
+  oled.println("Disonnected from MQTT");
             
   if (WiFi.isConnected()) {
     xTimerStart(mqttReconnectTimer, 0);

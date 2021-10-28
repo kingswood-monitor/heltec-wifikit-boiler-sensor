@@ -1,10 +1,19 @@
 #include <Arduino.h>
-#include "heltec.h"
+#include <Wire.h>
+#include "SSD1306Ascii.h"
+#include "SSD1306AsciiWire.h"
 #include <kwWiFi.h>
 #include <kwMQTT.h>
 #include <kwBoiler.h>
 
 #define SENSOR_TYPE "energy"
+
+// OLED library
+#define I2C_ADDRESS 0x3C
+#define RST_PIN 16
+#define PIN_SDA 4
+#define PIN_SCL 15
+
 
 void getMacAddress(char* buf)
 {
@@ -16,7 +25,14 @@ void getMacAddress(char* buf)
 void setup() 
 {
     Serial.begin(115200);
-    Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/);
+    Wire.begin(PIN_SDA, PIN_SCL);
+    Wire.setClock(400000L);
+
+    oled.begin(&Adafruit128x64, I2C_ADDRESS, RST_PIN);
+    oled.setFont(font5x7);
+    oled.setScrollMode(SCROLL_MODE_AUTO);
+    oled.displayRemap(true);
+
     getMacAddress(g_deviceID);
 
     wifiReconnectTimer = xTimerCreate("wifiTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToWifi));
@@ -41,13 +57,10 @@ void setup()
     mqttClient.onUnsubscribe(onMqttUnsubscribe);
     mqttClient.onMessage(onMqttMessage);
 
-    Heltec.display -> clear();
-    Heltec.display -> drawString(0, 0, "Device ID:");
-    Heltec.display -> drawString(COL2, 0, g_deviceID);
-    Heltec.display -> drawString(0, 10, "Firmware:");
-    Heltec.display -> drawString(COL2, 10, g_firmwareVersion);
-    Heltec.display -> display();
-  
+    oled.clear();
+    oled.println(g_deviceID);
+    oled.println(g_firmwareVersion);
+
     Serial.printf("------------------%s sensor------------------\n", SENSOR_TYPE);
     Serial.printf("Firmware              : %s\n", g_firmwareVersion);
     Serial.printf("Device ID             : %s\n", g_deviceID);
@@ -60,6 +73,7 @@ void setup()
     xTimerStart(readBoilerTimer, 0);
     connectToWifi();
 
+    while(1){;};
   }
 
 void loop() {
