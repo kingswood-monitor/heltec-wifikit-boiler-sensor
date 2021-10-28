@@ -26,12 +26,14 @@ public:
   kwHeltecWifikit32();
   void initDisplay(int pin_rst, int pin_sda, int pin_scl);
   void initDisplay(int pin_rst, int pin_sda, int pin_scl, bool doRemap);
+  void displayMode(DisplayMode mode);
   bool initNetwork(const char* SSID, const char* PWD, IPAddress MQTT_HOST);
   void makeTopic(const char* type, const char* field, const char* sensorType, char* buf);
   void makeTopic(const char* type, const char* field, char* buf);
-  void displayMode(DisplayMode mode);
   void publish(char* topic, char* data);
   void publish(char* topic, int data);
+  void publish(char* topic, float data);
+  void display(const char* data, int row);
   void run();
   
   char deviceID[16] = {0};

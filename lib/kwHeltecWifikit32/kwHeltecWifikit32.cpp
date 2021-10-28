@@ -31,6 +31,8 @@ void kwHeltecWifikit32::initDisplay(int pin_rst, int pin_sda, int pin_scl, bool 
     oled.setFont(font5x7);
     oled.setScrollMode(SCROLL_MODE_AUTO);
     oled.displayRemap(doRemap);
+
+    // displayMode(DISPLAY_MODE_DATA);
     
     oled.clear();
     oled.println(deviceID);
@@ -39,6 +41,8 @@ void kwHeltecWifikit32::initDisplay(int pin_rst, int pin_sda, int pin_scl, bool 
 // Initialise the Wifi and MQTT services - return true if successful
 bool kwHeltecWifikit32::initNetwork(const char* wifi_ssid, const char* wifi_pwd, IPAddress mqtt_host)
 {
+    // displayMode(DISPLAY_MODE_DATA);
+    
     oled.println("Connecting to wifi");
     oled.println(wifi_ssid);
 
@@ -85,7 +89,6 @@ void kwHeltecWifikit32::displayMode(DisplayMode mode)
     switch(mode)
     {
         case DISPLAY_MODE_SYSTEM:
-            oled.clear();
             oled.set1X();
             break;
         
@@ -113,6 +116,15 @@ void kwHeltecWifikit32::publish(char* topic, float data)
     sprintf(buf, "%.1f", data);
     publish(topic, buf);
 }
+
+// Display the labeled data at the specified row
+void kwHeltecWifikit32::display(const char* data, int row)
+{
+    oled.setCursor(0, row);
+    oled.print(data);
+    oled.clearToEOL();
+}
+
 
 // Run - keep MQTT alive and process commands
 void kwHeltecWifikit32::run()
@@ -154,6 +166,8 @@ void kwHeltecWifikit32::getMacAddress()
 // MQTT connect
 boolean kwHeltecWifikit32::mqttReconnect() 
 {
+    // displayMode(DISPLAY_MODE_DATA);
+
     if (mqttClient.connect(deviceID, topicMetaStatus, 2, true, "OFFLINE")) 
     {
         oled.println("MQTT connected");
