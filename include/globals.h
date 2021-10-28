@@ -3,13 +3,13 @@
 
 #include <kwLED.h>
 
-#define PIN_SENSOR 27
-
 #define COL2 50
+
+TimerHandle_t readBoilerTimer;
 
 const char *g_firmwareVersion = "1.1.0";
 char g_deviceID[16] = { 0 };
-int g_sampleIntervalSeconds = 2;
+int g_sampleIntervalSeconds = 1;
 
 kwLED led(LED);
 
