@@ -4,7 +4,6 @@ SSD1306AsciiWire oled;
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
-# define MQTT_RECONNECT_TIME_SECONDS 5
 
 // PUBLIC ///////////////////////////////////////////////////////////////////////
 
@@ -12,6 +11,7 @@ PubSubClient mqttClient(wifiClient);
 kwHeltecWifikit32::kwHeltecWifikit32()
 {
     getMacAddress();
+    makeTopic("meta", "status", topicMetaStatus);
 }
 
 // Initalise the OLED display
@@ -64,6 +64,18 @@ bool kwHeltecWifikit32::initNetwork(const char* wifi_ssid, const char* wifi_pwd,
 
 }
 
+// Make topic methods
+void kwHeltecWifikit32::makeTopic(const char* type, const char* field, const char* sensorType, char* buf)
+{
+    snprintf(buf, MAX_TOPIC_BUFFER_LEN, "%s/%s/%s/%s/%s", TOPIC_ROOT, type, field, sensorType, deviceID);
+}
+
+void kwHeltecWifikit32::makeTopic(const char* type, const char* field, char* buf)
+{
+    snprintf(buf, MAX_TOPIC_BUFFER_LEN, "%s/%s/%s/%s", TOPIC_ROOT, type, field, deviceID);
+}
+
+
 // Run - keep MQTT alive and process commands
 void kwHeltecWifikit32::run()
 {   
@@ -102,11 +114,11 @@ void kwHeltecWifikit32::getMacAddress()
 // MQTT connect
 boolean kwHeltecWifikit32::mqttReconnect() 
 {
-    if (mqttClient.connect(deviceID)) 
+    if (mqttClient.connect(deviceID, topicMetaStatus, 2, true, "OFFLINE")) 
     {
         oled.println("MQTT connected");
-        mqttClient.publish("outTopic","hello world");
-        mqttClient.subscribe("inTopic");
+        mqttClient.publish(topicMetaStatus, "ONLINE");
+        // mqttClient.subscribe("inTopic");
         lastReconnectAttempt = millis();
     }
     return mqttClient.connected();
