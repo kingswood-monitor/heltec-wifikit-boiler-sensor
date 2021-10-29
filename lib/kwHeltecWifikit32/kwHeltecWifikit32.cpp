@@ -6,7 +6,6 @@ PubSubClient mqttClient(wifiClient);
 
 char buf[10] = {0};
 
-
 // PUBLIC ///////////////////////////////////////////////////////////////////////
 
 // kwHeltecWifikit32 constructor
@@ -14,6 +13,7 @@ kwHeltecWifikit32::kwHeltecWifikit32()
 {
     getMacAddress();
     makeTopic("meta", "status", topicMetaStatus);
+    pinMode(LED, OUTPUT);
 }
 
 // Initalise the OLED display
@@ -28,23 +28,25 @@ void kwHeltecWifikit32::initDisplay(int pin_rst, int pin_sda, int pin_scl, bool 
     Wire.setClock(400000L);
 
     oled.begin(&Adafruit128x64, I2C_ADDRESS, pin_rst);
-    oled.setFont(font5x7);
-    oled.setScrollMode(SCROLL_MODE_AUTO);
-    oled.displayRemap(doRemap);
 
-    // displayMode(DISPLAY_MODE_DATA);
-    
+    // NOTE - this gives a 4 x 13 usable display
+    // oled.setRow(row * oled.fontRows());
+    // oled.setCol(col * oled.fontWidth());
+    oled.setFont(Callibri15);
+    oled.setLetterSpacing(2);
+    maxRows = oled.displayHeight() / (oled.fontRows() * 8); // 4
+    maxCols = oled.displayWidth() / oled.fontWidth();       // 13
+
+    oled.displayRemap(doRemap);
     oled.clear();
-    oled.println(deviceID);
+    
+    updateSystemStatus(deviceID);
 }
 
 // Initialise the Wifi and MQTT services - return true if successful
 bool kwHeltecWifikit32::initNetwork(const char* wifi_ssid, const char* wifi_pwd, IPAddress mqtt_host)
 {
-    // displayMode(DISPLAY_MODE_DATA);
-    
-    oled.println("Connecting to wifi");
-    oled.println(wifi_ssid);
+    updateSystemStatus("Connecting to WiFi");
 
     mqttClient.setServer(mqtt_host, 1883);
     mqttClient.setCallback(mqttCallback);
@@ -53,18 +55,18 @@ bool kwHeltecWifikit32::initNetwork(const char* wifi_ssid, const char* wifi_pwd,
     while (WiFi.status() != WL_CONNECTED) 
     {
         int max_tries = 20;
-        oled.println("Connecting");
         
         WiFi.disconnect(true);
         // TODO: Fix password case
         WiFi.begin(wifi_ssid);
         while (WiFi.status() != WL_CONNECTED && max_tries-- > 0) 
         {
-            oled.print(".");
             delay(1000);
         }
         oled.println();
     };
+
+    updateSystemStatus("Connected to WiFi");
 
     mqttReconnect();
 
@@ -81,24 +83,6 @@ void kwHeltecWifikit32::makeTopic(const char* type, const char* field, const cha
 void kwHeltecWifikit32::makeTopic(const char* type, const char* field, char* buf)
 {
     snprintf(buf, MAX_TOPIC_BUFFER_LEN, "%s/%s/%s/%s", TOPIC_ROOT, type, field, deviceID);
-}
-
-// Set the dislpay mode
-void kwHeltecWifikit32::displayMode(DisplayMode mode)
-{
-    switch(mode)
-    {
-        case DISPLAY_MODE_SYSTEM:
-            oled.setScrollMode(SCROLL_MODE_AUTO);
-            oled.set1X();
-            break;
-        
-        case DISPLAY_MODE_DATA:
-            oled.setScrollMode(SCROLL_MODE_OFF);
-            oled.clear();
-            oled.set2X();
-            break;
-    }
 }
 
 // Publish data to the specified topic
@@ -131,15 +115,15 @@ void kwHeltecWifikit32::display(const char* data, int row)
 // Run - keep MQTT alive and process commands
 void kwHeltecWifikit32::run()
 {   
-    // displayMode(DISPLAY_MODE_DATA);
-
     if (!mqttClient.connected()) 
-    {
+    {   
+        digitalWrite(LED, LOW);
+        
         long now = millis();
         if (now - lastReconnectAttempt > MQTT_RECONNECT_TIME_SECONDS * 1000) 
         {            
             lastReconnectAttempt = now; 
-            oled.println("Reconnecting...");
+            updateSystemStatus("Connecting to MQTT");
             
             if (mqttReconnect()) 
             {
@@ -149,7 +133,7 @@ void kwHeltecWifikit32::run()
         else {} // Wait for timer to expire 
     } 
     else 
-    {
+    {   
         mqttClient.loop();
     }
 }
@@ -165,16 +149,26 @@ void kwHeltecWifikit32::getMacAddress()
     strcpy(deviceID, theAddress.c_str());
 }
 
-// MQTT connect
+// Display system status
+void kwHeltecWifikit32::updateSystemStatus(std::string statusMessage)
+{
+    oled.setRow(3 * oled.fontRows());
+    oled.setCol(0);
+    oled.print(statusMessage.c_str());
+    oled.clearToEOL();
+}
+
+// Rconnect MQTT
 boolean kwHeltecWifikit32::mqttReconnect() 
 {
-    // displayMode(DISPLAY_MODE_DATA);
+    updateSystemStatus("Connecting to MQTT");
 
     if (mqttClient.connect(deviceID, topicMetaStatus, 2, true, "OFFLINE")) 
     {
-        oled.println("MQTT connected");
+        updateSystemStatus("ONLINE");
+        digitalWrite(LED, HIGH);
+        
         mqttClient.publish(topicMetaStatus, "ONLINE");
-        // mqttClient.subscribe("inTopic");
         lastReconnectAttempt = millis();
     }
     return mqttClient.connected();

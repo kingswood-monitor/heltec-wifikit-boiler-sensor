@@ -24,9 +24,9 @@ char topicDataBoilerStateLED[MAX_TOPIC_BUFFER_LEN];
 char topicDataBoilerCumulativeLED[MAX_TOPIC_BUFFER_LEN];
 char topicCommandResetTimer[MAX_TOPIC_BUFFER_LEN];
 
-Neotimer publishDataTimer = Neotimer();
 kwHeltecWifikit32 heltec;
 kwBoiler boiler{ BOILER_SENSOR_PIN };
+Neotimer publishDataTimer = Neotimer();
 
 void setup() 
 {
@@ -50,8 +50,6 @@ void setup()
     publishDataTimer.set(1000);
 
     delay(1000);
-
-    heltec.displayMode(DISPLAY_MODE_DATA);
   }
 
 void loop() {
