@@ -41,12 +41,13 @@ void kwHeltecWifikit32::initDisplay(int pin_rst, int pin_sda, int pin_scl, bool 
     oled.clear();
     
     updateSystemStatus(deviceID);
+    delay(5000);
 }
 
 // Initialise the Wifi and MQTT services - return true if successful
 bool kwHeltecWifikit32::initNetwork(const char* wifi_ssid, const char* wifi_pwd, IPAddress mqtt_host)
 {
-    updateSystemStatus("Connecting to WiFi");
+    updateSystemStatus("[->] WiFi");
 
     mqttClient.setServer(mqtt_host, 1883);
     mqttClient.setCallback(mqttCallback);
@@ -66,8 +67,10 @@ bool kwHeltecWifikit32::initNetwork(const char* wifi_ssid, const char* wifi_pwd,
         oled.println();
     };
 
-    updateSystemStatus("Connected to WiFi");
     didInitialiseNetwork = true;
+
+    updateSystemStatus("WiFi OK");
+    delay(500);
 
     mqttReconnect();
 
@@ -165,7 +168,7 @@ void kwHeltecWifikit32::updateSystemStatus(std::string statusMessage)
 // Rconnect MQTT
 boolean kwHeltecWifikit32::mqttReconnect() 
 {
-    updateSystemStatus("Connecting to MQTT");
+    updateSystemStatus("[->] MQTT");
 
     if (mqttClient.connect(deviceID, topicMetaStatus, 2, true, "OFFLINE")) 
     {
@@ -175,6 +178,7 @@ boolean kwHeltecWifikit32::mqttReconnect()
         mqttClient.publish(topicMetaStatus, "ONLINE");
         lastReconnectAttempt = millis();
     }
+
     return mqttClient.connected();
 }
 
