@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <neotimer.h>
+#include <kwTimer.h>
 #include <kwHeltecWifikit32.h>
 #include <kwBoiler.h>
 #include <secrets.h>
@@ -26,7 +26,7 @@ char topicCommandResetTimer[MAX_TOPIC_BUFFER_LEN];
 
 kwHeltecWifikit32 heltec;
 kwBoiler boiler{ BOILER_SENSOR_PIN };
-Neotimer publishDataTimer = Neotimer();
+kwTimer publishDataTimer = kwTimer();
 
 void setup() 
 {
