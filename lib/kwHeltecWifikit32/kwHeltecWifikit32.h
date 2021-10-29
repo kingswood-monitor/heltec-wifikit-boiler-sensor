@@ -41,6 +41,7 @@ private:
   static void mqttCallback(char* topic, byte* payload, unsigned int length);
   boolean mqttReconnect();
 
+  bool didInitialiseNetwork = false;
   long lastReconnectAttempt = 0;
   uint8_t maxRows;
   uint8_t maxCols;

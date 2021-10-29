@@ -32,7 +32,7 @@ void setup()
 {
     Serial.begin(115200);
     heltec.initDisplay(PIN_RST, PIN_SDA, PIN_SCL, true);
-    heltec.initNetwork(WIFI_SSID, WIFI_PASSWORD, MQTT_HOST);
+    // heltec.initNetwork(WIFI_SSID, WIFI_PASSWORD, MQTT_HOST);
 
     heltec.makeTopic("data", "boilerState", "LED", topicDataBoilerStateLED);
     heltec.makeTopic("data", "boilerCumulative", "LED", topicDataBoilerCumulativeLED);

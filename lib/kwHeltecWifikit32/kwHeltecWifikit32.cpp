@@ -67,6 +67,7 @@ bool kwHeltecWifikit32::initNetwork(const char* wifi_ssid, const char* wifi_pwd,
     };
 
     updateSystemStatus("Connected to WiFi");
+    didInitialiseNetwork = true;
 
     mqttReconnect();
 
@@ -77,7 +78,7 @@ void kwHeltecWifikit32::makeTopic(const char* type, const char* field, const cha
 {
     snprintf(buf, MAX_TOPIC_BUFFER_LEN, "%s/%s/%s/%s/%s", TOPIC_ROOT, type, field, sensorType, deviceID);
     // if its a command, register it
-    if (strcmp(type, "command") == 0) { mqttClient.subscribe(buf); }
+    if (strcmp(type, "command") == 0 && mqttClient.connected()) { mqttClient.subscribe(buf); }
 }
 
 void kwHeltecWifikit32::makeTopic(const char* type, const char* field, char* buf)
@@ -115,26 +116,29 @@ void kwHeltecWifikit32::display(const char* data, int row)
 // Run - keep MQTT alive and process commands
 void kwHeltecWifikit32::run()
 {   
-    if (!mqttClient.connected()) 
-    {   
-        digitalWrite(LED, LOW);
-        
-        long now = millis();
-        if (now - lastReconnectAttempt > MQTT_RECONNECT_TIME_SECONDS * 1000) 
-        {            
-            lastReconnectAttempt = now; 
-            updateSystemStatus("Connecting to MQTT");
+    if (didInitialiseNetwork)
+    {
+        if (!mqttClient.connected()) 
+        {   
+            digitalWrite(LED, LOW);
             
-            if (mqttReconnect()) 
-            {
-                lastReconnectAttempt = millis();
+            long now = millis();
+            if (now - lastReconnectAttempt > MQTT_RECONNECT_TIME_SECONDS * 1000) 
+            {            
+                lastReconnectAttempt = now; 
+                updateSystemStatus("[->] MQTT");
+                
+                if (mqttReconnect()) 
+                {
+                    lastReconnectAttempt = millis();
+                }
             }
+            else {} // Wait for timer to expire 
+        } 
+        else 
+        {   
+            mqttClient.loop();
         }
-        else {} // Wait for timer to expire 
-    } 
-    else 
-    {   
-        mqttClient.loop();
     }
 }
 
