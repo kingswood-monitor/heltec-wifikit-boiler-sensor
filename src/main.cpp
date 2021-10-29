@@ -35,7 +35,7 @@ void setup()
     // heltec.initNetwork(WIFI_SSID, WIFI_PASSWORD, MQTT_HOST);
 
     heltec.makeTopic("data", "boilerState", "LED", topicDataBoilerStateLED);
-    heltec.makeTopic("data", "boilerCumulative", "LED", topicDataBoilerCumulativeLED);
+    heltec.makeTopic("data", "boilerCumulativeSecs", "LED", topicDataBoilerCumulativeLED);
     heltec.makeTopic("command", "resetTimer", "LED", topicCommandResetTimer);
     
     Serial.printf("------------------%s sensor------------------\n", SENSOR_TYPE);
