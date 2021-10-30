@@ -6,7 +6,7 @@ int state = LOW;
 int oldState = LOW;
 bool didRise;
 
-uint32_t cumulativeTimeMillis = 0;
+uint32_t activeMillis = 0;
 uint32_t oldMillis;
 
 // kwBoiler constructor
@@ -25,7 +25,7 @@ uint16_t kwBoiler::readState()
 
     if (state == HIGH)
     {
-        cumulativeTimeMillis += millis() - oldMillis;
+        activeMillis += millis() - oldMillis;
         oldMillis = millis();
     }
 
@@ -35,7 +35,14 @@ uint16_t kwBoiler::readState()
 }
 
 // Get cumulative on time in seconds
-uint16_t kwBoiler::cumulativeSeconds()
+uint16_t kwBoiler::activeSeconds()
 {
-    return cumulativeTimeMillis / 1000;
+    return activeMillis / 1000;
+}
+
+
+// Reset the active time counter (typically, at midnight)
+void kwBoiler::resetActiveSeconds()
+{
+    activeMillis = 0;
 }

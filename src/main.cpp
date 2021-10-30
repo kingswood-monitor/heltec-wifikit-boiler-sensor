@@ -32,7 +32,7 @@ void setup()
     Serial.begin(115200);
     heltec.initDisplay(PIN_RST, PIN_SDA, PIN_SCL, true);
 
-    stateField = heltec.registerDataTopic("State", "degC", "boilerState", "LED");
+    stateField = heltec.registerDataTopic("State", "", "boilerState", "LED");
     cumulativeSecsField = heltec.registerDataTopic("On time", "secs", "boilerCumulativeSecs", "LED");
 
     Serial.printf("\n------------------%s sensor------------------------------------------------\n\n", SENSOR_TYPE);
@@ -51,12 +51,15 @@ void setup()
     publishDataTimer.set(1000);
   }
 
-void loop() {
-  
+int i = 0;
+void loop() 
+{  
   if (publishDataTimer.repeat())
   {
+      if (heltec.isMidnight()) { boiler.resetActiveSeconds(); };
+
       heltec.publish(stateField, boiler.readState());
-      heltec.publish(cumulativeSecsField, boiler.cumulativeSeconds());
+      heltec.publish(cumulativeSecsField, boiler.activeSeconds());
 
       heltec.display();
       heltec.displayTime();

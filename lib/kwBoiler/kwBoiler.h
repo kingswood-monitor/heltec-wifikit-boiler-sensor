@@ -8,12 +8,13 @@ class kwBoiler
 public:
     kwBoiler(int sensorPin);
     uint16_t readState();
-    uint16_t cumulativeSeconds();
+    uint16_t activeSeconds();
+    void resetActiveSeconds();
     
     int sensorPin = 0;
 
 private:
-    uint32_t cumulativeTimeMillis = 0;
+    uint32_t activeMillis = 0;
 };
 
 #endif
