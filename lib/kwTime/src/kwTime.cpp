@@ -1,27 +1,44 @@
 
-#include <kwTimeSync.h>
+#include <kwTime.h>
 
 WiFiUDP Udp;
 unsigned int localPort = 8888;
-
-// NTP Servers:
-static const char ntpServerName[] = "pool.ntp.org";
-
-const int timeZone = 0;     // UTC
-
-const int NTP_PACKET_SIZE = 48; // NTP time is in the first 48 bytes of message
-byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & outgoing packets
+static const char ntpServerName[] = "pool.ntp.org"; // NTP Servers:
+const int timeZone = 0;                             // UTC
+const int NTP_PACKET_SIZE = 48;                     // NTP time is in the first 48 bytes of message
+byte packetBuffer[NTP_PACKET_SIZE];                 //buffer to hold incoming & outgoing packets
+time_t prevDisplay = 0;                             // when the digital clock was displayed
 
 
-// kwTimeSync constructor
-
-kwTimeSync::kwTimeSync()
+// kwTime constructor
+kwTime::kwTime()
 {
-    Udp.begin(localPort);
-    // setSyncProvider(getNtpTime);
-    // setSyncInterval(300);
 }
 
+void kwTime::init()
+{
+    while (WiFi.status() != WL_CONNECTED) 
+    {
+        delay(500);
+        Serial.print(".");
+    }
+    
+    Udp.begin(localPort);
+    setSyncProvider(getNtpTime);
+    setSyncInterval(300);
+}
+
+void kwTime::displayTime()
+{
+    if (timeStatus() != timeNotSet) {
+        if (now() != prevDisplay)
+        {
+            prevDisplay = now();
+            digitalClockDisplay();
+        }
+    }
+    else { Serial.println("Time not set"); }
+}
 
 // HELPER methods
 
@@ -82,4 +99,28 @@ void sendNTPpacket(IPAddress &address)
   Udp.beginPacket(address, 123); //NTP requests are to port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
+}
+
+void digitalClockDisplay()
+{
+  // digital clock display of the time
+  Serial.print(hour());
+  printDigits(minute());
+  printDigits(second());
+  Serial.print(" ");
+  Serial.print(day());
+  Serial.print(".");
+  Serial.print(month());
+  Serial.print(".");
+  Serial.print(year());
+  Serial.println();
+}
+
+void printDigits(int digits)
+{
+  // utility for digital clock display: prints preceding colon and leading 0
+  Serial.print(":");
+  if (digits < 10)
+    Serial.print('0');
+  Serial.print(digits);
 }

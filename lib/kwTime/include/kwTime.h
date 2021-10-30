@@ -5,15 +5,17 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
-class kwTimeSync
+class kwTime
 {
 public:
-    kwTimeSync();
-
+    kwTime();
+    void init();
+    void displayTime();
 };
 
 time_t getNtpTime();
 void sendNTPpacket(IPAddress &address);
-
+void digitalClockDisplay();
+void printDigits(int digits);
 
 #endif
