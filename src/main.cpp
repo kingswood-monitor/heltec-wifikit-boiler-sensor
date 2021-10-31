@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <kwTimer.h>
+#include <kwNeoTimer.h>
 #include <kwHeltecWifikit32.h>
 #include <kwBoiler.h>
 #include <secrets.h>
@@ -25,7 +25,7 @@ uint8_t cumulativeSecsField;
 
 kwHeltecWifikit32 heltec;
 kwBoiler boiler{ BOILER_SENSOR_PIN };
-kwTimer publishDataTimer = kwTimer();
+kwNeoTimer publishDataTimer = kwNeoTimer();
 
 void setup() 
 {
@@ -62,7 +62,6 @@ void loop()
       heltec.publish(cumulativeSecsField, boiler.activeSeconds());
 
       heltec.display();
-      heltec.displayTime();
   }
   heltec.run();
 }
