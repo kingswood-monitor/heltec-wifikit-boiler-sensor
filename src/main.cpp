@@ -5,35 +5,35 @@
 #include <secrets.h>
 
 #define SENSOR_TYPE "energy"
-#define FIRMWARE_VERSION "2.1.0"
+#define FIRMWARE_VERSION "2.1.1"
 #define BOILER_SENSOR_PIN 27
+#define TOPIC_ROOT "kw_sensors"
 
 uint8_t stateField;
 uint8_t cumulativeSecsField;
 
-kwHeltecWifikit32 heltec;
+struct HeltecConfig config = 
+{
+  .ssid = WIFI_SSID,
+  .pwd = WIFI_PASSWORD,
+  .mqtt_host = IPAddress(192, 168, 1, 240), // Mac Mini M1
+  .rotateDisplay = true,
+  .firmwareVersion = FIRMWARE_VERSION,
+  .topicRoot = TOPIC_ROOT
+};
+
+kwHeltecWifikit32 heltec{ config };
 kwBoiler boiler{ BOILER_SENSOR_PIN };
 kwNeoTimer publishDataTimer = kwNeoTimer();
-
-HeltecConfig config;
 
 void setup() 
 {
     Serial.begin(115200);
 
-    config.firmwareVersion = FIRMWARE_VERSION;
-    config.ssid = WIFI_SSID;
-    config.pwd = WIFI_PASSWORD;
-    config.mqtt_host = IPAddress(192, 168, 1, 240); // Mac Mini M1
-    config.topicRoot = "kw_sensors";
-    config.rotateDisplay = true;
+    stateField = heltec.registerField("State:", "", "boilerState", "LED");
+    cumulativeSecsField = heltec.registerField("Active:", "mins", "boilerCumulativeSecs", "LED");
 
-    stateField = heltec.registerField("State", "", "boilerState", "LED");
-    cumulativeSecsField = heltec.registerField("On time", "secs", "boilerCumulativeSecs", "LED");
-    
-    publishDataTimer.set(1000);
-    
-    heltec.init(config);
+    heltec.init();
 
     Serial.printf("\n------------------%s sensor------------------------------------------------\n\n", SENSOR_TYPE);
     Serial.printf("%-12s : %s\n", "Firmware", FIRMWARE_VERSION);
@@ -44,9 +44,10 @@ void setup()
     {
       Serial.printf("%-12s : %s\n", heltec.dataTopics[i].fieldName.c_str(), heltec.dataTopics[i].topicString.c_str());
     }
+
+    publishDataTimer.set(1000);
   }
 
-int i = 0;
 void loop() 
 {  
   if (publishDataTimer.repeat())
@@ -55,6 +56,9 @@ void loop()
 
       heltec.publish(stateField, boiler.readState());
       heltec.publish(cumulativeSecsField, boiler.activeSeconds());
+      
+      heltec.update(stateField, boiler.readState() ? "ON" : "OFF");
+      heltec.update(cumulativeSecsField, (uint16_t)(boiler.activeSeconds() / 60.0));
   }
   heltec.run();
 }
