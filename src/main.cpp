@@ -38,7 +38,6 @@ void setup()
     Serial.printf("\n------------------%s sensor------------------------------------------------\n\n", SENSOR_TYPE);
     Serial.printf("%-12s : %s\n", "Firmware", FIRMWARE_VERSION);
     Serial.printf("%-12s : %s\n", "Device ID", heltec.deviceID);
-    Serial.printf("%-12s : %s %s\n", "RTC", heltec.hasRTC ? "OK" : "Not found", heltec.rtcWasAdjusted ? "[was not running - check time]" : "");
     Serial.printf("%-12s : %s\n", "Status", heltec.metaTopics[heltec.statusTopicID].c_str());
     for (int i=0; i < heltec.dataTopics.size(); i++)
     {
